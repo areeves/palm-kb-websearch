@@ -13,7 +13,8 @@
   "license": "ISC",
   "description": "A RESTful web service built with Express and TypeScript.",
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@types/express": "^5.0.3",
