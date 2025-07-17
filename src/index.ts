@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { KnowledgeBaseSearchResponseSchema } from './schemas';
 import { googleSearch } from './gcp-cse';
+import puppeteer from 'puppeteer';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -22,8 +23,25 @@ app.get('/api/v1/knowledgebases/:knowledgeBaseId/search', async (req: Request, r
 
   try {
     const googleResults = await googleSearch(query);
-    const results = (googleResults || []).slice(0, Number(numberResults) || 5).map((item, idx) => ({
-      content: item.snippet || '',
+    const resultsToFetch = (googleResults || []).slice(0, Number(numberResults) || 5);
+    // Use puppeteer to fetch page contents
+    const browser = await puppeteer.launch({ headless: true });
+    const pageContents: string[] = [];
+    for (const item of resultsToFetch) {
+      const page = await browser.newPage();
+      try {
+        await page.goto(item.link, { waitUntil: 'domcontentloaded', timeout: 15000 });
+        const content = await page.content();
+        pageContents.push(content);
+      } catch (err) {
+        pageContents.push('');
+      } finally {
+        await page.close();
+      }
+    }
+    await browser.close();
+    const results = resultsToFetch.map((item, idx) => ({
+      content: pageContents[idx] || item.snippet || '',
       score: 1.0 - idx * 0.1, // Dummy score
       citation: {
         documentId: documentId || item.cacheId || `doc-${idx}`,
