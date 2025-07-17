@@ -1,9 +1,8 @@
-import type { SearchEngine } from './SearchEngine';
+import type { SearchEngine, SearchResult } from './SearchEngine';
 import fetch from 'node-fetch';
-import { GoogleSearchResult } from '../gcp-cse';
 
 export class GoogleSearchEngine implements SearchEngine {
-  async search(query: string, apiKey?: string, searchEngineId?: string): Promise<GoogleSearchResult[]> {
+  async search(query: string, apiKey?: string, searchEngineId?: string): Promise<SearchResult[]> {
     const key = apiKey || process.env.GCP_API_KEY;
     const cx = searchEngineId || process.env.GCP_CSE_ID;
     if (!key || !cx) {
