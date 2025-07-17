@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
 import { KnowledgeBaseSearchResponseSchema } from './schemas';
-import { googleSearch } from './gcp-cse';
+import { GoogleSearchEngine } from './search/GoogleSearchEngine';
+import { BingSearchEngine } from './search/BingSearchEngine';
+import { SearchEngine } from './search/SearchEngine';
 import puppeteer from 'puppeteer';
 
 const app = express();
@@ -21,9 +23,20 @@ app.get('/api/v1/knowledgebases/:knowledgeBaseId/search', async (req: Request, r
     return res.status(400).json({ error: 'Missing or invalid query parameter' });
   }
 
+  let searchEngine: SearchEngine;
+  const engineEnv = (process.env.SEARCH_ENGINE || 'google').toLowerCase();
+  switch (engineEnv) {
+    case 'bing':
+      searchEngine = new BingSearchEngine();
+      break;
+    case 'google':
+    default:
+      searchEngine = new GoogleSearchEngine();
+  }
+
   try {
-    const googleResults = await googleSearch(query);
-    const resultsToFetch = (googleResults || []).slice(0, Number(numberResults) || 5);
+    const searchResults = await searchEngine.search(query);
+    const resultsToFetch = (searchResults || []).slice(0, Number(numberResults) || 5);
     // Use puppeteer to fetch page contents
     const browser = await puppeteer.launch({ headless: true });
     const pageContents: string[] = [];
@@ -40,12 +53,12 @@ app.get('/api/v1/knowledgebases/:knowledgeBaseId/search', async (req: Request, r
       }
     }
     await browser.close();
-    const results = resultsToFetch.map((item, idx) => ({
+    const results = resultsToFetch.map((item: any, idx: number) => ({
       content: pageContents[idx] || item.snippet || '',
       score: 1.0 - idx * 0.1, // Dummy score
       citation: {
         documentId: documentId || item.cacheId || `doc-${idx}`,
-        name: item.title || 'Google Result',
+        name: item.title || 'Search Result',
         filename: item.displayLink || '',
       },
     }));
