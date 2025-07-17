@@ -4,11 +4,13 @@ import { GoogleSearchEngine } from './search/GoogleSearchEngine';
 import { BingSearchEngine } from './search/BingSearchEngine';
 import { SearchEngine } from './search/SearchEngine';
 import puppeteer from 'puppeteer';
+import { setupSwagger } from './swagger';
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
+setupSwagger(app);
 
 app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Hello, world!' });
