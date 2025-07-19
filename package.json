@@ -13,10 +13,12 @@
   "license": "ISC",
   "description": "A RESTful web service built with Express and TypeScript.",
   "dependencies": {
+    "@types/turndown": "^5.0.5",
     "express": "^5.1.0",
     "node-fetch": "^2.7.0",
     "puppeteer": "^24.14.0",
     "swagger-ui-express": "^5.0.1",
+    "turndown": "^7.2.0",
     "zod": "^4.0.5"
   },
   "devDependencies": {

@@ -4,6 +4,7 @@ import { GoogleSearchEngine } from '../search/GoogleSearchEngine';
 import { BingSearchEngine } from '../search/BingSearchEngine';
 import { SearchEngine } from '../search/SearchEngine';
 import puppeteer from 'puppeteer';
+import { htmlToMarkdown } from '../utils/htmlToMarkdown';
 
 export async function searchKnowledgeBase(req: Request, res: Response) {
   const { knowledgeBaseId } = req.params;
@@ -44,15 +45,19 @@ export async function searchKnowledgeBase(req: Request, res: Response) {
       }
     }
     await browser.close();
-    const results = resultsToFetch.map((item: any, idx: number) => ({
-      content: pageContents[idx] || item.snippet || '',
-      score: 1.0 - idx * 0.1, // Dummy score
-      citation: {
-        documentId: documentId || item.cacheId || `doc-${idx}`,
-        name: item.title || 'Search Result',
-        filename: item.displayLink || '',
-      },
-    }));
+    const results = resultsToFetch.map((item: any, idx: number) => {
+      const html = pageContents[idx] || item.snippet || '';
+      const markdown = htmlToMarkdown(html);
+      return {
+        content: markdown,
+        score: 1.0 - idx * 0.1, // Dummy score
+        citation: {
+          documentId: documentId || item.cacheId || `doc-${idx}`,
+          name: item.title || 'Search Result',
+          filename: item.displayLink || '',
+        },
+      };
+    });
     const response = {
       totalResults: results.length,
       results,
