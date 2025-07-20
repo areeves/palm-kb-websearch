@@ -1,6 +1,6 @@
 
 import express, { Request, Response } from 'express';
-import { setupSwagger } from './swagger';
+import { setupSwagger } from './setup-swagger';
 import knowledgeBaseRoutes from './routes/knowledgeBaseRoutes';
 
 const app = express();
