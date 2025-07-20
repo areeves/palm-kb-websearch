@@ -140,6 +140,51 @@
           }
         }
       }
+    },
+    "/api/scrape": {
+      "post": {
+        "summary": "Scrape a web page",
+        "description": "Scrapes the provided URL and returns the page title, HTML, and Markdown content.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "url": { "type": "string", "format": "uri", "description": "The URL of the page to scrape." }
+                },
+                "required": ["url"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful scrape response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": { "type": "string" },
+                    "url": { "type": "string", "format": "uri" },
+                    "html": { "type": "string" },
+                    "markdown": { "type": "string" }
+                  },
+                  "required": ["title", "url", "html", "markdown"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing url property"
+          },
+          "500": {
+            "description": "Failed to scrape page"
+          }
+        }
+      }
+    }
     }
   }
-}
