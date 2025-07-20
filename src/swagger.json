@@ -86,6 +86,60 @@
           }
         }
       }
+    },
+    "/api/search": {
+      "post": {
+        "summary": "Perform a web search",
+        "description": "Performs a web search using the configured search engine.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": { "type": "string", "description": "The search query." },
+                  "numResults": { "type": "integer", "description": "Number of results to return." }
+                },
+                "required": ["query", "numResults"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful search response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": { "type": "string" },
+                          "snippet": { "type": "string" },
+                          "url": { "type": "string", "format": "uri" }
+                        },
+                        "required": ["title", "snippet", "url"]
+                      }
+                    }
+                  },
+                  "required": ["results"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid query or numResults"
+          },
+          "500": {
+            "description": "Search failed"
+          }
+        }
+      }
     }
   }
 }
