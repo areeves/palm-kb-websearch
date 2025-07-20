@@ -11,6 +11,81 @@
     }
   ],
   "paths": {
-    
+    "/api/v1/knowledgebases/{knowledgeBaseId}/search": {
+      "get": {
+        "summary": "Search a knowledge base",
+        "description": "Searches the specified knowledge base using the provided query string.",
+        "parameters": [
+          {
+            "name": "knowledgeBaseId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The ID of the knowledge base to search."
+          },
+          {
+            "name": "query",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "The search query string."
+          },
+          {
+            "name": "numberResults",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 5 },
+            "description": "Number of results to return."
+          },
+          {
+            "name": "documentId",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Optional document ID to filter results."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful search response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "totalResults": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "content": { "type": "string" },
+                          "score": { "type": "number" },
+                          "citation": {
+                            "type": "object",
+                            "properties": {
+                              "documentId": { "type": "string" },
+                              "name": { "type": "string" },
+                              "filename": { "type": "string" }
+                            },
+                            "required": ["documentId", "name", "filename"],
+                            "nullable": true
+                          }
+                        },
+                        "required": ["content", "score"]
+                      }
+                    }
+                  },
+                  "required": ["totalResults", "results"]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid query parameter"
+          }
+        }
+      }
+    }
   }
 }
