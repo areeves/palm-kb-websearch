@@ -15,54 +15,35 @@ export async function searchKnowledgeBase(req: Request, res: Response) {
     return res.status(400).json({ error: 'Missing or invalid query parameter' });
   }
 
-  let searchEngine: SearchEngine;
-  const engineEnv = (process.env.SEARCH_ENGINE || 'google').toLowerCase();
-  switch (engineEnv) {
-    case 'bing':
-      searchEngine = new BingSearchEngine();
-      break;
-    case 'google':
-    default:
-      searchEngine = new GoogleSearchEngine();
-  }
+  const numResults = Number(numberResults) || 5;
+  const searchService = new (await import('../services/SearchService')).SearchService();
+  const scrapeService = (await import('../services/ScrapeService')).ScrapeService;
 
   try {
-    const searchResults = await searchEngine.search(query);
-    const resultsToFetch = (searchResults || []).slice(0, Number(numberResults) || 5);
-    // Use puppeteer to fetch page contents
-    const browser = await puppeteer.launch({ headless: true });
-    const pageContents: string[] = [];
-    for (const item of resultsToFetch) {
-      const page = await browser.newPage();
+    const searchResults = await searchService.search(query, numResults);
+    const results = [];
+    for (let idx = 0; idx < searchResults.length; idx++) {
+      const item = searchResults[idx];
+      let scraped;
       try {
-        await page.goto(item.link, { waitUntil: 'domcontentloaded', timeout: 15000 });
-        const content = await page.content();
-        pageContents.push(content);
+        scraped = await scrapeService.scrape(item.url);
       } catch (err) {
-        pageContents.push('');
-      } finally {
-        await page.close();
+        scraped = { markdown: item.snippet || '', title: item.title, url: item.url };
       }
-    }
-    await browser.close();
-    const results = resultsToFetch.map((item: any, idx: number) => {
-      const html = pageContents[idx] || item.snippet || '';
-      const markdown = htmlToMarkdown(html);
-      return {
-        content: markdown,
-        score: 1.0 - idx * 0.1, // Dummy score
+      results.push({
+        content: scraped.markdown,
+        score: 1.0 - idx * 0.1,
         citation: {
-          documentId: documentId || item.cacheId || `doc-${idx}`,
-          name: item.title || 'Search Result',
-          filename: item.displayLink || '',
+          documentId: documentId || `doc-${idx}`,
+          name: scraped.title || item.title || 'Search Result',
+          filename: scraped.url || '',
         },
-      };
-    });
+      });
+    }
     const response = {
       totalResults: results.length,
       results,
     };
-    // Validate response with Zod
     const validation = KnowledgeBaseSearchResponseSchema.safeParse(response);
     if (!validation.success) {
       return res.status(500).json({ error: 'Invalid response schema', details: validation.error });
