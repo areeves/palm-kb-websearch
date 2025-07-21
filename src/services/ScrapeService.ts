@@ -1,5 +1,6 @@
 import puppeteer from 'puppeteer';
 import { htmlToMarkdown } from '../utils/htmlToMarkdown';
+import { extract, extractFromHtml } from '@extractus/article-extractor';
 
 export class ScrapeService {
   static async scrape(url: string) {
@@ -7,9 +8,21 @@ export class ScrapeService {
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: 'domcontentloaded' });
     const html = await page.content();
-    const title = await page.title();
-    const markdown = htmlToMarkdown(html);
+    // Use extractFromHtml for HTML content and URL
+    const article = await extractFromHtml(html, url);
+    const title = article?.title || (await page.title());
+    const markdown = htmlToMarkdown(article?.content || html);
     await browser.close();
-    return { title, url, html, markdown };
+    return {
+      title,
+      url,
+      markdown,
+      author: article?.author,
+      published: article?.published,
+      description: article?.description,
+      image: article?.image,
+      source: article?.source,
+      // 'lang' property is not present in ArticleData, so it is removed
+    };
   }
 }
