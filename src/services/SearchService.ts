@@ -22,11 +22,11 @@ export class SearchService {
 
   async search(query: string, numResults: number): Promise<SearchResult[]> {
     const results = await this.engine.search(query);
-    // Normalize results to { title, snippet, url } and limit to numResults
     return results.slice(0, numResults).map(r => ({
       title: r.title,
       snippet: r.snippet,
       url: r.link
     }));
   }
+}
 }

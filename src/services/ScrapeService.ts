@@ -7,10 +7,8 @@ export class ScrapeService {
     const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: 'domcontentloaded' });
-    // Wait for network to be idle for 100 ms
     await page.waitForNetworkIdle({ idleTime: 100 });
     const html = await page.content();
-    // Use extractFromHtml for HTML content and URL
     const article = await extractFromHtml(html, url);
     const title = article?.title || (await page.title());
     const markdown = htmlToMarkdown(article?.content || html);
@@ -24,7 +22,6 @@ export class ScrapeService {
       description: article?.description,
       image: article?.image,
       source: article?.source,
-      // 'lang' property is not present in ArticleData, so it is removed
     };
   }
 }
