@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer';
 import { htmlToMarkdown } from '../utils/htmlToMarkdown';
-import { extract, extractFromHtml } from '@extractus/article-extractor';
+import { extract as _extract, extractFromHtml } from '@extractus/article-extractor';
 
 export class ScrapeService {
   static async scrape(url: string) {

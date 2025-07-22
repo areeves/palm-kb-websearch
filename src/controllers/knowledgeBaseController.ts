@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
 import { KnowledgeBaseSearchResponseSchema } from '../schemas';
-import { GoogleSearchEngine } from '../search/GoogleSearchEngine';
-import { BingSearchEngine } from '../search/BingSearchEngine';
-import { SearchEngine } from '../search/SearchEngine';
-import puppeteer from 'puppeteer';
-import { htmlToMarkdown } from '../utils/htmlToMarkdown';
+import { GoogleSearchEngine as _GoogleSearchEngine } from '../search/GoogleSearchEngine';
+import { BingSearchEngine as _BingSearchEngine } from '../search/BingSearchEngine';
+import { SearchEngine as _SearchEngine } from '../search/SearchEngine';
+import _puppeteer from 'puppeteer';
+import { htmlToMarkdown as _htmlToMarkdown } from '../utils/htmlToMarkdown';
 
 export async function searchKnowledgeBase(req: Request, res: Response) {
-  const { knowledgeBaseId } = req.params;
+  const { knowledgeBaseId: _knowledgeBaseId } = req.params;
   const { query, numberResults, documentId } = req.query;
-  const authHeader = req.header('Authorization');
+  const _authHeader = req.header('Authorization');
 
   if (!query || typeof query !== 'string') {
     return res.status(400).json({ error: 'Missing or invalid query parameter' });
@@ -27,7 +27,7 @@ export async function searchKnowledgeBase(req: Request, res: Response) {
       let scraped;
       try {
         scraped = await scrapeService.scrape(item.url);
-      } catch (err) {
+      } catch {
         scraped = { markdown: item.snippet || '', title: item.title, url: item.url };
       }
       results.push({
